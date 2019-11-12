@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <input type="text" v-model="value" v-limit-input />
+        <p>value: {{ this.value }}</p>
+    </div>
+</body>
+<script>
+    
+    Vue.directive('limit-input', {
+       // 此处可以通过binding穿参控制输入限制格式
+        update: function (el, binding, vnode) {
+            el.onkeypress = function (e) {
+                var code = e.charCode;
+                if (code !== 0) {
+                    if (!String.fromCharCode(code).match(/[0-9\.]/)) { // 匹配是否输入了数字或‘.’
+                        return false;
+                    }
+                }
+            };
+
+            // 中文输入法下，触发shift或空格，会将内容展现到input输入框，因此需要在此监听textInput事件
+            el.addEventListener('textInput', function (e) { 
+                e.target.value = limitFiveDecimal(e.target.value);
+            });
+
+            // 注：Firefox不兼容textInput事件，因此用keyup
+            el.onkeyup = function (e) {
+                e.target.value = limitFiveDecimal(e.target.value);
+            };
+        }
+    });
+
+    function limitDoubleDecimal (str) {
+        return str.match(/^\d*(\.?\d{0,2})/g)[0];
+    }
+
+    function limitFiveDecimal (str) {
+        return str.match(/^\d*(\.?\d{0,5})/g)[0];
+    }
+
+    let app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                value: '1.00'
+            }
+        }
+    })
+</script>
+</html>
